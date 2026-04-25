@@ -1,121 +1,28 @@
-import React from 'react';
-import {
-  GoHome,
-  GoHomeFill,
-  GoSearch,
-} from 'react-icons/go';
-import {
-  VscLibrary,
-} from 'react-icons/vsc';
-import {
-  HiPlus,
-  HiOutlineArrowRight,
-} from 'react-icons/hi';
-import {
-  IoHeartSharp,
-} from 'react-icons/io5';
-import {
-  MdPodcasts,
-  MdOutlinePushPin,
-} from 'react-icons/md';
-import {
-  BiSortAlt2,
-} from 'react-icons/bi';
+import React, { useState } from 'react';
+import { GoHomeFill, GoSearch } from 'react-icons/go';
+import { VscLibrary } from 'react-icons/vsc';
+import { HiPlus, HiOutlineArrowRight, HiOutlineArrowLeft } from 'react-icons/hi';
+import { IoHeartSharp, IoClose } from 'react-icons/io5';
+import { MdPodcasts, MdOutlinePushPin } from 'react-icons/md';
+import { BiSortAlt2 } from 'react-icons/bi';
 import Logo from '../assets/spotify_icon.png';
-
 import album1 from '../assets/album1.png';
-import album2 from '../assets/album2.png';
-import album3 from '../assets/album3.png';
-import album4 from '../assets/album4.png';
-import album5 from '../assets/album5.png';
-import album6 from '../assets/album6.png';
 
-const playlistData = [
-  {
-    name: 'Liked Songs',
-    type: 'Playlist',
-    count: '312 songs',
-    gradient: 'liked',
-    isPinned: true,
-  },
-  {
-    name: 'Your Episodes',
-    type: 'Playlist',
-    count: '12 episodes',
-    gradient: 'episodes',
-  },
-  {
-    name: 'Chill Lo-Fi Vibes',
-    type: 'Playlist',
-    owner: 'Spotify',
-    img: album1,
-  },
-  {
-    name: 'Energy Flows',
-    type: 'Playlist',
-    owner: 'Pop Central',
-    img: album2,
-  },
-  {
-    name: 'Cyber Wave EDM',
-    type: 'Playlist',
-    owner: 'DJ Pulse',
-    img: album3,
-  },
-  {
-    name: 'Echoes of the Canyon',
-    type: 'Album',
-    owner: 'Indie Collective',
-    img: album4,
-  },
-  {
-    name: 'Soulful Nights',
-    type: 'Playlist',
-    owner: 'R&B Mood',
-    img: album5,
-  },
-  {
-    name: 'Classical Piano',
-    type: 'Playlist',
-    owner: 'Piano Masters',
-    img: album6,
-  },
-  {
-    name: 'Arijit Singh Radio',
-    type: 'Artist',
-    isArtist: true,
-    img: album1,
-  },
-  {
-    name: 'Midnight Drives',
-    type: 'Playlist',
-    owner: 'Night Owl',
-    img: album3,
-  },
-  {
-    name: 'Morning Coffee',
-    type: 'Playlist',
-    owner: 'Feel Good Inc',
-    img: album4,
-  },
-];
+function Sidebar({ navigate, likedSongs, playlists, artists, createPlaylist, setCurrentPlaylist, setCurrentArtist, removePlaylist, removeArtist, isSidebarCollapsed, setIsSidebarCollapsed }) {
+  const [filter, setFilter] = useState('All');
 
-function Sidebar() {
   return (
-    <div className="sidebar">
-
+    <div className={`sidebar ${isSidebarCollapsed ? 'sidebar--collapsed' : ''}`}>
       <nav className="sidebar__nav">
         <div className="sidebar__logo">
           <img src={Logo} alt="Spotify" className="sidebar__logo-img" />
           <span className="sidebar__logo-text">Spotify</span>
         </div>
-
-        <div className="sidebar__nav-item sidebar__nav-item--active">
+        <div className="sidebar__nav-item" onClick={() => navigate("home")}>
           <GoHomeFill className="sidebar__nav-icon" />
           <span>Home</span>
         </div>
-
-        <div className="sidebar__nav-item">
+        <div className="sidebar__nav-item" onClick={() => navigate("search")}>
           <GoSearch className="sidebar__nav-icon" />
           <span>Search</span>
         </div>
@@ -128,60 +35,81 @@ function Sidebar() {
             <span>Your Library</span>
           </div>
           <div className="sidebar__library-actions">
-            <button className="sidebar__library-btn" title="Create playlist or folder">
+            <button className="sidebar__library-btn sidebar__library-btn--create" onClick={createPlaylist}>
               <HiPlus />
             </button>
-            <button className="sidebar__library-btn" title="Show more">
-              <HiOutlineArrowRight />
+            <button className="sidebar__library-btn sidebar__library-btn--collapse" onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}>
+              {isSidebarCollapsed ? <HiOutlineArrowRight /> : <HiOutlineArrowLeft />}
             </button>
           </div>
         </div>
 
-
         <div className="sidebar__library-filters">
-          <span className="sidebar__filter-chip sidebar__filter-chip--active">Playlists</span>
-          <span className="sidebar__filter-chip">Artists</span>
-          <span className="sidebar__filter-chip">Albums</span>
-          <span className="sidebar__filter-chip">Podcasts</span>
+          {['All', 'Playlists', 'Artists'].map(f => (
+            <span
+              key={f}
+              className={`sidebar__filter-chip ${filter === f ? 'sidebar__filter-chip--active' : ''}`}
+              onClick={() => setFilter(f)}
+            >{f}</span>
+          ))}
         </div>
 
-
         <div className="sidebar__search-sort">
-          <button className="sidebar__search-btn">
-            <GoSearch />
-          </button>
-          <button className="sidebar__sort-btn">
+          <button className="sidebar__search-btn"><GoSearch /></button>
+          <button className="sidebar__sort-btn" onClick={() => navigate("recents")}>
             <span>Recents</span>
             <BiSortAlt2 />
           </button>
         </div>
 
-
         <div className="sidebar__playlists">
-          {playlistData.map((item, index) => (
-            <div className="sidebar__playlist-item" key={index}>
-              {item.gradient ? (
-                <div className={`sidebar__playlist-gradient sidebar__playlist-gradient--${item.gradient}`}>
-                  {item.gradient === 'liked' ? <IoHeartSharp /> : <MdPodcasts />}
+          {(filter === 'All' || filter === 'Playlists') && (
+            <>
+              <div className="sidebar__playlist-item" onClick={() => navigate("liked")}>
+                <div className="sidebar__playlist-gradient sidebar__playlist-gradient--liked">
+                  <IoHeartSharp />
                 </div>
-              ) : (
-                <img
-                  src={item.img}
-                  alt={item.name}
-                  className={`sidebar__playlist-img ${item.isArtist ? 'sidebar__playlist-img--rounded' : ''}`}
-                />
-              )}
-              <div className="sidebar__playlist-info">
-                <span className="sidebar__playlist-name">{item.name}</span>
-                <span className="sidebar__playlist-meta">
-                  {item.isPinned && <MdOutlinePushPin style={{ marginRight: 4, verticalAlign: 'middle', color: '#1db954', fontSize: '0.75rem' }} />}
-                  {item.type} {item.owner ? `• ${item.owner}` : item.count ? `• ${item.count}` : ''}
-                </span>
+                <div className="sidebar__playlist-info">
+                  <span className="sidebar__playlist-name">Liked Songs</span>
+                  <span className="sidebar__playlist-meta">
+                    <MdOutlinePushPin style={{ marginRight: 4, verticalAlign: 'middle', color: '#1db954', fontSize: '0.75rem' }} />
+                    Playlist • {likedSongs.length} songs
+                  </span>
+                </div>
               </div>
+
+              {playlists.map((pl, idx) => (
+                <div className="sidebar__playlist-item playlist-item-hover" key={"pl" + idx} onClick={() => { setCurrentPlaylist(pl); navigate("playlist_view"); }}>
+                  <div className="sidebar__playlist-gradient sidebar__playlist-gradient--episodes">
+                    <MdPodcasts />
+                  </div>
+                  <div className="sidebar__playlist-info">
+                    <span className="sidebar__playlist-name">{pl.name}</span>
+                    <span className="sidebar__playlist-meta">Playlist • {pl.songs.length} songs</span>
+                  </div>
+                  <button className="sidebar__delete-btn" onClick={(e) => { e.stopPropagation(); removePlaylist(idx); }}>
+                    <IoClose />
+                  </button>
+                </div>
+              ))}
+            </>
+          )}
+
+          {(filter === 'All' || filter === 'Artists') && artists.map((ar, idx) => (
+            <div className="sidebar__playlist-item playlist-item-hover" key={"ar" + idx} onClick={() => { setCurrentArtist({ name: ar, img: album1 }); navigate("artist_view"); }}>
+              <img src={album1} alt={ar} className="sidebar__playlist-img sidebar__playlist-img--rounded" />
+              <div className="sidebar__playlist-info">
+                <span className="sidebar__playlist-name">{ar}</span>
+                <span className="sidebar__playlist-meta">Artist</span>
+              </div>
+              <button className="sidebar__delete-btn" onClick={(e) => { e.stopPropagation(); removeArtist(idx); }}>
+                <IoClose />
+              </button>
             </div>
           ))}
         </div>
       </div>
+      <style>{`.playlist-item-hover { position: relative; } .playlist-item-hover .sidebar__delete-btn { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); display: none; background: transparent; border: none; color: #b3b3b3; cursor: pointer; padding: 4px; border-radius: 50%; z-index: 10; } .playlist-item-hover:hover .sidebar__delete-btn { display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.1); } .sidebar__delete-btn:hover { color: #fff; background: rgba(255,255,255,0.2) !important; }`}</style>
     </div>
   );
 }
